@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
     const verified = jwt.verify(token, process.env.JWT_SECRET );
     req.user = verified;
     next();
-  } catch (err) { // eslint-disable-line no-unused-vars
+  } catch (err) {
     res.status(400).json({ message: 'Invalid Token' });
   }
 };

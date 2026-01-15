@@ -1,7 +1,4 @@
 # 🏆 Piattaforma Gestione Tornei Sportivi
-
-Questa applicazione è una soluzione Full-Stack progettata per gestire prenotazioni di campi sportivi, organizzazione di tornei e autenticazione utenti. Il progetto è strutturato in microservizi containerizzati per garantire modularità e scalabilità.
-
 ## 🛠 Scelte Tecniche e Architetturali
 
 Il progetto adotta un'architettura a servizi separati (Backend API e Frontend SPA), orchestrati tramite Docker.
@@ -16,8 +13,8 @@ Il progetto adotta un'architettura a servizi separati (Backend API e Frontend SP
 *   **Mongoose ODM:** Utilizzato per garantire una validazione dei dati a livello applicativo e gestire le relazioni tra documenti (es. riferimenti tra `User` e `Booking`).
 
 ### 3. Frontend: Vue.js 3 + Vite
-*   **Vue 3 (Composition API):** Offre una reattività eccellente e un codice più organizzato e riutilizzabile rispetto alla precedente Options API.
-*   **Vite:** Scelto come build tool per la sua velocità estrema in fase di sviluppo (HMR istantaneo) rispetto a Webpack, migliorando la DX (Developer Experience).
+*   **Vue 3 (Composition API):** Offre una reattività eccellente e un codice più organizzato e riutilizzabile.
+*   **Vite:** Scelto come build tool per la sua velocità in fase di sviluppo , migliorando la DX.
 *   **Single Page Application (SPA):** Garantisce un'esperienza utente fluida simile a un'app nativa, caricando le risorse una sola volta e navigando tramite Client-side routing.
 
 ### 4. DevOps: Docker & Docker Compose
@@ -36,18 +33,7 @@ Il progetto adotta un'architettura a servizi separati (Backend API e Frontend SP
 Prima di avviare il progetto (con qualsiasi metodo), è necessario configurare le variabili d'ambiente.
 
 1.  Vai nella cartella `backend`.
-2.  Copia il file di esempio `.env.example` rinominandolo in `.env`.
-    ```bash
-    cd backend
-    cp .env.example .env
-    ```
-3.  Modifica il file `.env` inserendo una stringa segreta per il JWT:
-    ```env
-    JWT_SECRET=tua_chiave_segreta_super_sicura
-    MONGO_URI=mongodb://host.docker.internal:27017/skuola # Se usi Docker
-    # Oppure mongodb://localhost:27017/skuola se avvii manualmente
-    PORT=3000
-    ```
+2.  Incolla il file .env
 
 ---
 
@@ -65,8 +51,6 @@ Questo metodo avvia contemporaneamente Backend, Frontend e configura la rete aut
     *   **Frontend:** [http://localhost:5173](http://localhost:5173)
     *   **Backend API:** [http://localhost:3000](http://localhost:3000)
 
-*Nota: Se modifichi il codice, `nodemon` (nel backend) e `Vite` (nel frontend) ricaricheranno automaticamente le modifiche grazie ai volumi configurati.*
-
 ---
 
 ### 🛠 Metodo 2: Avvio Manuale (Senza Docker)
@@ -81,7 +65,7 @@ Apri un terminale nella cartella `backend`:
 ```bash
 cd backend
 npm install
-npm run seed # (Opzionale) Popola il DB con dati di prova
+npm run seed # (Opzionale)
 node app.js
 ```
 Il server partirà su `http://localhost:3000`.
