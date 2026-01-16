@@ -300,14 +300,12 @@ onMounted(() => {
     </div>
 
     <div v-else>
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-trophy text-warning"></i> Tournaments</h2>
-        <div class="d-flex gap-3">
-          <input v-model="searchQuery" @input="() => searchTournaments(false)" type="text" class="form-control bg-dark text-light border-secondary" placeholder="Search...">
+      <h2 class="mb-4"><i class="bi bi-trophy text-warning"></i> Tournaments</h2>
+      <div class="d-flex gap-3 mb-4">
+          <input v-model="searchQuery" @input="() => searchTournaments(false)" type="text" class="form-control bg-dark text-light border-secondary" placeholder="Search tournaments...">
           <button v-if="currentUser" class="btn btn-success text-nowrap" @click="isCreating = true">
             <i class="bi bi-plus-lg"></i> Create
           </button>
-        </div>
       </div>
 
       <div class="list-group shadow-sm">

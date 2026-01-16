@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import FieldsView from '../views/FieldsView.vue'
 import TournamentsView from '../views/TournamentsView.vue'
 import UsersView from '../views/UsersView.vue'
+import PlayersView from '../views/PlayersView.vue'
+import TeamsView from '../views/TeamsView.vue'
 import MyBookingsView from '../views/MyBookingsView.vue'
 import LoginView from '../views/LoginView.vue'
 import SignupView from '../views/SignupView.vue'
@@ -18,6 +20,16 @@ const router = createRouter({
       path: '/tournaments',
       name: 'tournaments',
       component: TournamentsView
+    },
+    {
+      path: '/teams',
+      name: 'teams',
+      component: TeamsView
+    },
+    {
+      path: '/players',
+      name: 'players',
+      component: PlayersView
     },
     {
       path: '/users',

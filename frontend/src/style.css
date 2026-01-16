@@ -13,6 +13,15 @@
     border-color: #0d6efd; /* Primary color on hover */
 }
 
+.icon-circle {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Prevent shrinking in flex containers */
+}
+
 .fade-enter-active,
 .fade-leave-active {
     transition: opacity 0.2s ease;

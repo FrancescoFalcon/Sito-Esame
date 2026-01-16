@@ -32,7 +32,7 @@ onMounted(() => {
       <div v-for="user in users" :key="user._id" class="col-md-6 col-lg-4">
         <div class="card h-100 custom-card">
           <div class="card-body d-flex flex-column align-items-center text-center p-4">
-            <div class="bg-secondary rounded-circle p-3 mb-3">
+            <div class="bg-secondary rounded-circle icon-circle mb-3">
               <i class="bi bi-person-fill fs-4 text-white"></i>
             </div>
             <div>

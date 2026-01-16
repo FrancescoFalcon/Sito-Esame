@@ -10,13 +10,7 @@ router.get('/', async (req, res) => {
         let query = {};
         if (q) {
             query = {
-                $or: [
-                    { name: { $regex: q, $options: 'i' } },
-                    { sport: { $regex: q, $options: 'i' } },
-                    { 'teams.name': { $regex: q, $options: 'i' } },
-                    { 'teams.players.name': { $regex: q, $options: 'i' } },
-                    { 'teams.players.surname': { $regex: q, $options: 'i' } }
-                ]
+                name: { $regex: q, $options: 'i' }
             };
         }
         const tournaments = await Tournament.find(query).populate('creator', 'username');

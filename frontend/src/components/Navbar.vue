@@ -26,6 +26,16 @@ defineEmits(['logout'])
               <i class="bi bi-diagram-3 me-1"></i> Tournaments
             </router-link>
           </li>
+           <li class="nav-item">
+            <router-link class="nav-link" to="/teams" active-class="active">
+              <i class="bi bi-people-fill me-1"></i> Teams
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/players" active-class="active">
+              <i class="bi bi-person-lines-fill me-1"></i> Players
+            </router-link>
+          </li>
           <li class="nav-item">
             <router-link class="nav-link" to="/users" active-class="active">
               <i class="bi bi-people me-1"></i> Users
