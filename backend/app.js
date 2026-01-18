@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
@@ -8,6 +9,7 @@ const app = express();
 const PORT = 3000;
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(bodyParser.json());
 

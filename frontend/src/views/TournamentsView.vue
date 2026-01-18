@@ -11,9 +11,13 @@ const searchQuery = ref('')
 const selectedTournament = ref(null)
 const standings = ref([])
 const isCreating = ref(false)
+const isEditing = ref(false)
 const tournamentForm = ref({ name: '', sport: 'football', maxTeams: 4, startDate: '' })
+const editForm = ref({ name: '', maxTeams: 0, startDate: '' })
 const newTeamName = ref('')
 const expandedTeam = ref(null)
+const editingMatchId = ref(null)
+const matchResultForm = ref({ team1Score: 0, team2Score: 0 })
 const newPlayer = ref({ name: '', surname: '', number: '' })
 
 const searchTournaments = async (showLoader = true) => {
@@ -42,10 +46,31 @@ const selectTournament = async (t) => {
   try {
     selectedTournament.value = await request(`/tournaments/${t._id}`)
     standings.value = await request(`/tournaments/${t._id}/standings`)
+    isEditing.value = false
   } catch (e) {
     showError(e.message)
   }
   setLoading(false)
+}
+
+const openEditMode = () => {
+  if (!selectedTournament.value) return
+  editForm.value = {
+    name: selectedTournament.value.name,
+    maxTeams: selectedTournament.value.maxTeams,
+    startDate: selectedTournament.value.startDate
+  }
+  isEditing.value = true
+}
+
+const updateTournament = async () => {
+  try {
+    const updated = await request(`/tournaments/${selectedTournament.value._id}`, 'PUT', editForm.value)
+    selectedTournament.value = { ...selectedTournament.value, ...updated }
+    isEditing.value = false
+  } catch (e) {
+    showError(e.message)
+  }
 }
 
 const isCreator = (t) => {
@@ -117,23 +142,32 @@ const generateMatches = async (id) => {
   }
 }
 
-const enterResult = async (match) => {
-  const score1 = prompt(`Score for ${match.team1}:`)
-  const score2 = prompt(`Score for ${match.team2}:`)
-  if (score1 === null || score2 === null) return
-  
-  const s1 = parseInt(score1)
-  const s2 = parseInt(score2)
-
-  if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) {
-    return alert('Invalid scores. Please enter non-negative numbers.')
+const startEditMatch = (match) => {
+  editingMatchId.value = match._id
+  matchResultForm.value = { 
+    team1Score: match.result && match.result.team1Score != null ? match.result.team1Score : 0, 
+    team2Score: match.result && match.result.team2Score != null ? match.result.team2Score : 0 
   }
+}
+
+const cancelMatchEdit = () => {
+    editingMatchId.value = null
+    matchResultForm.value = { team1Score: 0, team2Score: 0 }
+}
+
+const saveMatchResult = async (matchId) => {
+  const { team1Score, team2Score } = matchResultForm.value
   
+  if (team1Score === '' || team2Score === '' || isNaN(team1Score) || isNaN(team2Score) || team1Score < 0 || team2Score < 0) {
+    return alert('Please enter valid non-negative numbers for scores.')
+  }
+
   try {
-    await request(`/matches/${match._id}/result`, 'PUT', {
-      team1Score: s1,
-      team2Score: s2
+    await request(`/matches/${matchId}/result`, 'PUT', {
+      team1Score: parseInt(team1Score),
+      team2Score: parseInt(team2Score)
     })
+    editingMatchId.value = null
     selectTournament(selectedTournament.value) // Reload
   } catch (e) {
     alert(e.message)
@@ -196,12 +230,37 @@ onMounted(() => {
           </div>
         </div>
         <div v-if="isCreator(selectedTournament)">
+          <button v-if="selectedTournament.status === 'open'" class="btn btn-warning me-2" @click="openEditMode"><i class="bi bi-pencil-fill"></i></button>
           <button v-if="selectedTournament.status === 'open'" class="btn btn-info me-2" @click="generateMatches(selectedTournament._id)">Generate Schedule</button>
           <button class="btn btn-danger" @click="deleteTournament(selectedTournament._id)"><i class="bi bi-trash"></i></button>
         </div>
       </div>
 
-      <div class="row g-4">
+      <div v-if="isEditing" class="card shadow border-0 mb-4">
+        <div class="card-body">
+            <h3>Edit Tournament</h3>
+            <form @submit.prevent="updateTournament">
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input v-model="editForm.name" class="form-control" required />
+                </div>
+                 <div class="mb-3">
+                    <label class="form-label">Max Teams</label>
+                    <input v-model="editForm.maxTeams" type="number" class="form-control" required />
+                </div>
+                 <div class="mb-3">
+                    <label class="form-label">Start Date</label>
+                    <input v-model="editForm.startDate" type="date" class="form-control" required />
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" @click="isEditing = false">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+      </div>
+
+      <div v-else class="row g-4">
         <div class="col-md-4">
           <div class="card shadow-sm border-0 mb-3">
             <div class="card-header bg-dark text-white">Teams ({{ selectedTournament.teams.length }}/{{ selectedTournament.maxTeams }})</div>
@@ -281,16 +340,29 @@ onMounted(() => {
             <div class="card-header bg-dark text-white">Matches</div>
             <div class="list-group list-group-flush">
               <div v-for="match in selectedTournament.matches" :key="match._id" class="list-group-item bg-transparent text-light d-flex justify-content-between align-items-center">
-                <div>
-                  <span class="fw-bold">{{ match.team1 }}</span> vs <span class="fw-bold">{{ match.team2 }}</span>
+                <div v-if="editingMatchId === match._id" class="d-flex align-items-center gap-2 w-100">
+                    <span class="fw-bold">{{ match.team1 }}</span>
+                    <input v-model.number="matchResultForm.team1Score" type="number" min="0" class="form-control form-control-sm" style="width: 60px">
+                    <span>-</span>
+                    <input v-model.number="matchResultForm.team2Score" type="number" min="0" class="form-control form-control-sm" style="width: 60px">
+                    <span class="fw-bold">{{ match.team2 }}</span>
+                    <div class="ms-auto">
+                        <button class="btn btn-sm btn-success me-1" @click="saveMatchResult(match._id)"><i class="bi bi-check"></i></button>
+                        <button class="btn btn-sm btn-secondary" @click="cancelMatchEdit"><i class="bi bi-x"></i></button>
+                    </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                  <span v-if="match.status === 'played'" class="badge bg-warning text-dark fs-6">{{ match.result.team1Score }} - {{ match.result.team2Score }}</span>
-                  <span v-else class="badge bg-secondary">{{ match.date ? String(match.date).substring(0, 10) : 'Scheduled' }}</span>
-                  
-                  <button v-if="isCreator(selectedTournament) && match.status !== 'played'" class="btn btn-sm btn-warning" @click="enterResult(match)">
-                    <i class="bi bi-pencil-fill text-dark"></i>
-                  </button>
+                <div v-else class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                      <span class="fw-bold">{{ match.team1 }}</span> vs <span class="fw-bold">{{ match.team2 }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <span v-if="match.status === 'played'" class="badge bg-warning text-dark fs-6">{{ match.result.team1Score }} - {{ match.result.team2Score }}</span>
+                      <span v-else class="badge bg-secondary">{{ match.date ? String(match.date).substring(0, 10) : 'Scheduled' }}</span>
+                      
+                      <button v-if="isCreator(selectedTournament)" class="btn btn-sm btn-warning" @click="startEditMatch(match)">
+                        <i class="bi bi-pencil-fill text-dark"></i>
+                      </button>
+                    </div>
                 </div>
               </div>
             </div>

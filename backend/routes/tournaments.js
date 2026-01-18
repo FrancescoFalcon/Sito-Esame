@@ -24,6 +24,18 @@ router.get('/', async (req, res) => {
 router.post('/', auth, async (req, res) => {
     try {
         const { name, sport, maxTeams, startDate } = req.body;
+
+        if (!name || name.length < 3) return res.status(400).json({ message: 'Name must be at least 3 characters long' });
+        if (!maxTeams || maxTeams < 2) return res.status(400).json({ message: 'Max teams must be at least 2' });
+        
+        const dateObj = new Date(startDate);
+        const now = new Date();
+        const todayMidnight = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+        if (isNaN(dateObj.getTime()) || dateObj < todayMidnight) {
+            return res.status(400).json({ message: 'Invalid start date. Cannot be in the past.' });
+        }
+
         const tournament = new Tournament({
             name,
             sport,
@@ -58,17 +70,35 @@ router.put('/:id', auth, async (req, res) => {
         if (!tournament) return res.status(404).json({ message: 'Tournament not found' });
         if (tournament.creator.toString() !== req.user._id) return res.status(403).json({ message: 'Unauthorized' });
 
-        if (req.body.teams) {
-             if (req.body.teams.length > tournament.maxTeams) {
-                 return res.status(400).json({ message: 'Exceeds max teams' });
-             }
+        const { name, maxTeams, startDate, teams } = req.body;
+
+        if (name !== undefined && name.length < 3) return res.status(400).json({ message: 'Name must be at least 3 characters long' });
+        if (maxTeams !== undefined && maxTeams < 2) return res.status(400).json({ message: 'Max teams must be at least 2' });
+        if (startDate !== undefined) {
+            const dateObj = new Date(startDate);
+            const now = new Date();
+            const todayMidnight = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            
+            if (isNaN(dateObj.getTime()) || dateObj < todayMidnight) {
+                return res.status(400).json({ message: 'Invalid start date. Cannot be in the past.' });
+            }
         }
 
-        // Use set() to properly handle Mongoose updates including arrays
-        tournament.set(req.body);
+        const effectiveTeamsCount = teams ? teams.length : tournament.teams.length;
+        const effectiveMaxTeams = maxTeams !== undefined ? maxTeams : tournament.maxTeams;
+
+        if (effectiveTeamsCount > effectiveMaxTeams) {
+            return res.status(400).json({ message: 'Number of teams exceeds maximum allowed' });
+        }
+
+        if (name) tournament.name = name;
+        if (startDate) tournament.startDate = startDate;
+        if (maxTeams !== undefined) tournament.maxTeams = maxTeams;
         
-        // Mark modified paths if necessary (sometimes needed for mixed types, but good safety)
-        if (req.body.teams) tournament.markModified('teams');
+        if (teams) {
+             tournament.teams = teams;
+             tournament.markModified('teams');
+        }
 
         await tournament.save();
         res.json(tournament);
