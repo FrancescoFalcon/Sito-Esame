@@ -81,6 +81,23 @@ Il sito sarà accessibile su `http://localhost:5173`.
 
 ---
 
+## ⚠️ Disclaimer per il Testing
+
+Per facilitare la fase di testing e valutazione del progetto, **è possibile inserire i risultati delle partite anche se la data e l'ora pianificate non sono ancora state raggiunte**. 
+
+In un ambiente di produzione reale, questa operazione sarebbe logicamente bloccata fino al termine dell'evento sportivo.
+
+### 🔧 Implementazione della restrizione
+Per abilitare il controllo sulla data, basterebbe aggiungere una validazione nel backend (es. in `backend/routes/matches.js`) prima di aggiornare il risultato:
+
+```javascript
+const matchDate = new Date(match.date);
+const now = new Date();
+if (now < matchDate) {
+    return res.status(400).json({ error: "Impossibile inserire il risultato prima dell'inizio della partita." });
+}
+```
+
 ## 📂 Struttura del Progetto
 
 ```
